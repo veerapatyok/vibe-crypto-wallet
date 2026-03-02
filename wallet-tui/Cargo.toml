@@ -1,0 +1,14 @@
+[package]
+name = "wallet-tui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wallet-core = { path = "../wallet-core" }
+ratatui = "0.30"
+crossterm = { version = "0.27", features = ["event-stream"] }
+anyhow = "1.0"
+tui-textarea = "0.4"
+futures = "0.3"
+tokio = { version = "1", features = ["full"] }
+qrcode = "0.12"
