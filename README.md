@@ -41,22 +41,19 @@ cargo install cargo-ndk
 ### 1. Build the Rust Library
 To build the library for your local machine (testing/development):
 ```bash
-cd rust
 cargo build
 ```
 
 ### 2. Build for Android (EVM & Solana Core)
 Use `cargo-ndk` to build the shared libraries (`.so`) for different Android architectures:
 ```bash
-cd rust
 cargo ndk -t aarch64-linux-android -t armv7-linux-androideabi build --release
 ```
-The output will be in `rust/target/`.
+The output will be in `target/`.
 
 ### 3. Run the Terminal UI (Rust Only)
 You can interact with the wallet core directly from your terminal:
 ```bash
-cd rust
 cargo run -p wallet-tui
 ```
 **TUI Controls:**
@@ -71,7 +68,7 @@ cargo run -p wallet-tui
 ### 4. Generate Mobile Bindings (UniFFI)
 To generate the Kotlin code that connects your Android app to the Rust core:
 ```bash
-cd rust/wallet-ffi
+cd wallet-ffi
 cargo run --features=uniffi/cli --bin uniffi-bindgen generate src/lib.rs --language kotlin --out-dir ../../out/
 ```
 
@@ -81,7 +78,6 @@ cargo run --features=uniffi/cli --bin uniffi-bindgen generate src/lib.rs --langu
 
 Run the automated test suite to verify mnemonic generation and address derivation for both EVM and Solana:
 ```bash
-cd rust
 cargo test -p wallet-core
 ```
 
