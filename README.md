@@ -6,6 +6,7 @@ A secure, airgapped hardware wallet implementation in Rust, designed to run on o
 
 - **Airgapped Design**: No network permissions required. All communication via QR codes (UR protocol).
 - **Strict Hexagonal Architecture**: Complete decoupling of core logic from external dependencies using the **Ports and Adapters** pattern.
+- **Robust Error Handling**: Powered by **Anyhow**, ensuring rich error contexts and a panic-free codebase across all sub-projects.
 - **Flexible Mnemonics**: Supports both **12-word** and **24-word** BIP-39 mnemonics.
 - **PIN/Passphrase Support**: Optional BIP-39 passphrase (PIN) support for enhanced security during seed derivation.
 - **Responsive Terminal UI (TUI)**: 
@@ -24,7 +25,7 @@ A secure, airgapped hardware wallet implementation in Rust, designed to run on o
 The project follows a strict **Hexagonal Architecture** (Ports and Adapters), ensuring that the core business logic remains agnostic of infrastructure details.
 
 ### 1. Domain Layer (`wallet-core/src/domain`)
-Contains the core business entities and the **Ports** (traits) that define required functionality:
+Contains the core business entities and the **Ports** (traits) that define required functionality. All traits return `anyhow::Result` for consistent error propagation.
 - **`Wallet`**: Core state containing the mnemonic.
 - **`Chain`**: Supported blockchains (EVM, Solana).
 - **`MnemonicProvider`**: Port for phrase generation and seed derivation.
@@ -41,9 +42,9 @@ Contains concrete **Adapters** for the defined Ports:
 - **`CryptoAdapter`**: Specialized logic for Secp256k1 (EVM) and Ed25519 (Solana).
 - **`UrAdapter`**: Implements UR (Uniform Resources) protocol for secure airgap communication.
 
-### 4. Primary Adapters
+### 4. Primary Adapters (Drivers)
 - **`wallet-tui`**: A terminal-based user interface for interacting with the wallet core.
-- **`wallet-ffi`**: A UniFFI-based bridge for Android/iOS mobile integration.
+- **`wallet-ffi`**: A UniFFI-based bridge for Android/iOS mobile integration. Converts internal `anyhow` errors to `String` at the library boundary.
 
 ---
 
@@ -150,5 +151,5 @@ val signature = wallet.signEvmHash(txHashBytes, "1234")
 
 ## 🔒 Security Notes
 - **Airplane Mode**: This software is intended to be used on a device with all radios (Wi-Fi, Bluetooth, Cellular) hardware-disabled or permanently turned off.
-- **Panic Free**: The Rust core is designed to avoid panics, returning errors gracefully to the UI layer to prevent crashes and undefined behavior.
-- **QR Density**: The TUI uses high-density Unicode blocks for QR codes to ensure readability on small screens while maintaining airgap security.
+- **Panic Free & Robust**: Built using `anyhow` to ensure all errors (cryptographic, mnemonic, or data encoding) are propagated gracefully to the UI/FFI layers without system panics.
+- **QR Density**: The TUI uses high-density Unicode blocks for QR codes to ensure readability on small screens while maintaining airgap security via the UR protocol.

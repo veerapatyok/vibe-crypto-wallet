@@ -169,9 +169,9 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, mut app: App) 
                             Some(passphrase)
                         };
                         let wallet = if let Some(m) = mnemonic {
-                            app.service.import_wallet(m).unwrap()
+                            app.service.import_wallet(m)?
                         } else {
-                            app.service.create_random_wallet(*word_count).unwrap()
+                            app.service.create_random_wallet(*word_count)?
                         };
                         app.state = AppState::WalletView(wallet, pass_opt);
                     }
@@ -192,10 +192,9 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, mut app: App) 
                         };
                     }
                     KeyCode::Char('e') => {
-                        let addr = app
-                            .service
-                            .derive_address(wallet, Chain::Evm, pass.as_deref())
-                            .unwrap();
+                        let addr =
+                            app.service
+                                .derive_address(wallet, Chain::Evm, pass.as_deref())?;
                         let image = generate_qr(&addr);
                         app.state = AppState::QrView {
                             content: image,
@@ -205,10 +204,9 @@ fn run_app(terminal: &mut Terminal<CrosstermBackend<io::Stdout>>, mut app: App) 
                         };
                     }
                     KeyCode::Char('s') => {
-                        let addr = app
-                            .service
-                            .derive_address(wallet, Chain::Solana, pass.as_deref())
-                            .unwrap();
+                        let addr =
+                            app.service
+                                .derive_address(wallet, Chain::Solana, pass.as_deref())?;
                         let image = generate_qr(&addr);
                         app.state = AppState::QrView {
                             content: image,

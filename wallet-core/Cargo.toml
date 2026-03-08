@@ -21,3 +21,4 @@ pbkdf2 = "0.12"
 getrandom = { version = "0.2", features = [
     "js",
 ] } # Useful if we ever target WASM, but good for rand
+anyhow = "1.0.102"

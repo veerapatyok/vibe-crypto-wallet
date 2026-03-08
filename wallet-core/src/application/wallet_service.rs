@@ -1,4 +1,5 @@
 use crate::domain::{AirgapProvider, Chain, CryptoProvider, MnemonicProvider, Wallet};
+use anyhow::Result;
 use std::sync::Arc;
 
 pub struct WalletService {
@@ -20,12 +21,12 @@ impl WalletService {
         }
     }
 
-    pub fn create_random_wallet(&self, word_count: u8) -> Result<Wallet, String> {
+    pub fn create_random_wallet(&self, word_count: u8) -> Result<Wallet> {
         let phrase = self.mnemonic_provider.generate_mnemonic(word_count)?;
         Ok(Wallet::new(phrase))
     }
 
-    pub fn import_wallet(&self, phrase: &str) -> Result<Wallet, String> {
+    pub fn import_wallet(&self, phrase: &str) -> Result<Wallet> {
         self.mnemonic_provider.validate_mnemonic(phrase)?;
         Ok(Wallet::new(phrase.to_string()))
     }
@@ -35,7 +36,7 @@ impl WalletService {
         wallet: &Wallet,
         chain: Chain,
         pin: Option<&str>,
-    ) -> Result<String, String> {
+    ) -> Result<String> {
         let seed = self.mnemonic_provider.get_seed(&wallet.mnemonic, pin)?;
         self.crypto_provider.derive_address(&seed, chain)
     }
@@ -45,12 +46,12 @@ impl WalletService {
         wallet: &Wallet,
         message_hash: [u8; 32],
         pin: Option<&str>,
-    ) -> Result<Vec<u8>, String> {
+    ) -> Result<Vec<u8>> {
         let seed = self.mnemonic_provider.get_seed(&wallet.mnemonic, pin)?;
         self.crypto_provider.sign_evm_hash(&seed, message_hash)
     }
 
-    pub fn encode_to_ur(&self, data: &[u8]) -> Result<Vec<String>, String> {
+    pub fn encode_to_ur(&self, data: &[u8]) -> Result<Vec<String>> {
         self.airgap_provider.encode_to_ur(data)
     }
 }

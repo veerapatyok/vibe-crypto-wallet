@@ -9,6 +9,7 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 wallet-core = { path = "../wallet-core" }
 uniffi = { version = "0.28.0", features = ["cli"] }
+anyhow = "1.0.102"
 
 [build-dependencies]
 uniffi = { version = "0.28.0", features = ["build"] }

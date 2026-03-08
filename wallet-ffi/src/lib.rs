@@ -35,7 +35,9 @@ impl Wallet {
         let crypto = Arc::new(CryptoAdapter);
         let airgap = Arc::new(UrAdapter);
         let service = Arc::new(WalletService::new(bip39, crypto, airgap));
-        let inner = service.create_random_wallet(word_count)?;
+        let inner = service
+            .create_random_wallet(word_count)
+            .map_err(|e| e.to_string())?;
         Ok(Self {
             inner,
             service: service.clone(),
@@ -48,7 +50,7 @@ impl Wallet {
         let crypto = Arc::new(CryptoAdapter);
         let airgap = Arc::new(UrAdapter);
         let service = Arc::new(WalletService::new(bip39, crypto, airgap));
-        let inner = service.import_wallet(&phrase)?;
+        let inner = service.import_wallet(&phrase).map_err(|e| e.to_string())?;
         Ok(Self { inner, service })
     }
 
@@ -59,6 +61,7 @@ impl Wallet {
     pub fn derive_address(&self, chain: Chain, pin: Option<String>) -> Result<String, String> {
         self.service
             .derive_address(&self.inner, chain.into(), pin.as_deref())
+            .map_err(|e| e.to_string())
     }
 
     pub fn sign_evm_hash(
@@ -73,6 +76,7 @@ impl Wallet {
         hash_arr.copy_from_slice(&message_hash);
         self.service
             .sign_evm_hash(&self.inner, hash_arr, pin.as_deref())
+            .map_err(|e| e.to_string())
     }
 
     pub fn encode_qr_fragments(
@@ -80,6 +84,6 @@ impl Wallet {
         data: Vec<u8>,
         _type_str: String,
     ) -> Result<Vec<String>, String> {
-        self.service.encode_to_ur(&data)
+        self.service.encode_to_ur(&data).map_err(|e| e.to_string())
     }
 }
