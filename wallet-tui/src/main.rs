@@ -17,7 +17,7 @@ use ratatui::{
 use std::io;
 use std::sync::Arc;
 use tui_textarea::TextArea;
-use wallet_core::{Bip39Adapter, Chain, CryptoAdapter, Wallet, WalletService};
+use wallet_core::{Bip39Adapter, Chain, CryptoAdapter, UrAdapter, Wallet, WalletService};
 
 #[derive(Clone)]
 enum AppState {
@@ -47,7 +47,8 @@ impl App {
     fn new() -> Self {
         let bip39 = Arc::new(Bip39Adapter);
         let crypto = Arc::new(CryptoAdapter);
-        let service = Arc::new(WalletService::new(bip39, crypto));
+        let airgap = Arc::new(UrAdapter);
+        let service = Arc::new(WalletService::new(bip39, crypto, airgap));
         let mut menu_state = ListState::default();
         menu_state.select(Some(0));
 

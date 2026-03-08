@@ -3,22 +3,8 @@ pub mod domain;
 pub mod infrastructure;
 
 pub use application::WalletService;
-pub use domain::{Chain, Wallet};
-pub use infrastructure::{Bip39Adapter, CryptoAdapter};
-
-pub mod airgap {
-    use ur::Encoder;
-
-    pub fn encode_to_ur(data: &[u8], _type_str: &str) -> Result<Vec<String>, String> {
-        let mut encoder = Encoder::bytes(data, 200).map_err(|e| e.to_string())?;
-        let mut fragments = Vec::new();
-        for _ in 0..encoder.fragment_count() {
-            let fragment = encoder.next_part().map_err(|e| e.to_string())?;
-            fragments.push(fragment);
-        }
-        Ok(fragments)
-    }
-}
+pub use domain::{AirgapProvider, Chain, Wallet};
+pub use infrastructure::{Bip39Adapter, CryptoAdapter, UrAdapter};
 
 #[cfg(test)]
 mod tests {
@@ -29,7 +15,8 @@ mod tests {
     fn test_hexagonal_wallet() {
         let bip39 = Arc::new(Bip39Adapter);
         let crypto = Arc::new(CryptoAdapter);
-        let service = WalletService::new(bip39, crypto);
+        let airgap = Arc::new(UrAdapter);
+        let service = WalletService::new(bip39, crypto, airgap);
 
         let wallet = service.create_random_wallet(24).unwrap();
         assert_eq!(wallet.mnemonic.split_whitespace().count(), 24);
@@ -40,13 +27,18 @@ mod tests {
 
         assert!(evm_address.starts_with("0x"));
         assert!(sol_address.len() >= 32);
+
+        // Test airgap encoding
+        let fragments = service.encode_to_ur(b"hello").unwrap();
+        assert!(!fragments.is_empty());
     }
 
     #[test]
     fn test_pin_derivation() {
         let bip39 = Arc::new(Bip39Adapter);
         let crypto = Arc::new(CryptoAdapter);
-        let service = WalletService::new(bip39, crypto);
+        let airgap = Arc::new(UrAdapter);
+        let service = WalletService::new(bip39, crypto, airgap);
 
         let phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art";
         let wallet = service.import_wallet(phrase).unwrap();

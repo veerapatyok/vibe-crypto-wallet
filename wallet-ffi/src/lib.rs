@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use wallet_core::{
-    Bip39Adapter, Chain as DomainChain, CryptoAdapter, Wallet as DomainWallet, WalletService,
+    Bip39Adapter, Chain as DomainChain, CryptoAdapter, UrAdapter, Wallet as DomainWallet,
+    WalletService,
 };
 
 uniffi::setup_scaffolding!();
@@ -32,7 +33,8 @@ impl Wallet {
     pub fn new_random(word_count: u8) -> Result<Self, String> {
         let bip39 = Arc::new(Bip39Adapter);
         let crypto = Arc::new(CryptoAdapter);
-        let service = Arc::new(WalletService::new(bip39, crypto));
+        let airgap = Arc::new(UrAdapter);
+        let service = Arc::new(WalletService::new(bip39, crypto, airgap));
         let inner = service.create_random_wallet(word_count)?;
         Ok(Self {
             inner,
@@ -44,7 +46,8 @@ impl Wallet {
     pub fn from_mnemonic(phrase: String) -> Result<Self, String> {
         let bip39 = Arc::new(Bip39Adapter);
         let crypto = Arc::new(CryptoAdapter);
-        let service = Arc::new(WalletService::new(bip39, crypto));
+        let airgap = Arc::new(UrAdapter);
+        let service = Arc::new(WalletService::new(bip39, crypto, airgap));
         let inner = service.import_wallet(&phrase)?;
         Ok(Self { inner, service })
     }
@@ -75,8 +78,8 @@ impl Wallet {
     pub fn encode_qr_fragments(
         &self,
         data: Vec<u8>,
-        type_str: String,
+        _type_str: String,
     ) -> Result<Vec<String>, String> {
-        wallet_core::airgap::encode_to_ur(&data, &type_str)
+        self.service.encode_to_ur(&data)
     }
 }

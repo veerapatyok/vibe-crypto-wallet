@@ -5,7 +5,7 @@ A secure, airgapped hardware wallet implementation in Rust, designed to run on o
 ## 🚀 Features
 
 - **Airgapped Design**: No network permissions required. All communication via QR codes (UR protocol).
-- **Hexagonal Architecture**: Strict separation of domain logic, application services, and infrastructure adapters.
+- **Strict Hexagonal Architecture**: Complete decoupling of core logic from external dependencies using the **Ports and Adapters** pattern.
 - **Flexible Mnemonics**: Supports both **12-word** and **24-word** BIP-39 mnemonics.
 - **PIN/Passphrase Support**: Optional BIP-39 passphrase (PIN) support for enhanced security during seed derivation.
 - **Responsive Terminal UI (TUI)**: 
@@ -16,6 +16,49 @@ A secure, airgapped hardware wallet implementation in Rust, designed to run on o
   - **EVM**: Ethereum, Polygon, BSC, etc. (BIP-44 path `m/44'/60'/0'/0/0`).
   - **Solana**: Ed25519-based derivation (`m/44'/501'/0'/0/0`).
 - **UniFFI Bridge**: Automatically generates Kotlin/Swift bindings for mobile integration.
+
+---
+
+## 🏗 Architecture
+
+The project follows a strict **Hexagonal Architecture** (Ports and Adapters), ensuring that the core business logic remains agnostic of infrastructure details.
+
+### 1. Domain Layer (`wallet-core/src/domain`)
+Contains the core business entities and the **Ports** (traits) that define required functionality:
+- **`Wallet`**: Core state containing the mnemonic.
+- **`Chain`**: Supported blockchains (EVM, Solana).
+- **`MnemonicProvider`**: Port for phrase generation and seed derivation.
+- **`CryptoProvider`**: Port for address derivation and transaction signing.
+- **`AirgapProvider`**: Port for high-density UR encoding (QR data).
+
+### 2. Application Layer (`wallet-core/src/application`)
+Coordinates the workflow between the domain and infrastructure:
+- **`WalletService`**: Orchestrates mnemonic generation, account import, and signing. It interacts with adapters solely through their trait interfaces.
+
+### 3. Infrastructure Layer (`wallet-core/src/infrastructure`)
+Contains concrete **Adapters** for the defined Ports:
+- **`Bip39Adapter`**: Uses `tiny-bip39` for mnemonics.
+- **`CryptoAdapter`**: Specialized logic for Secp256k1 (EVM) and Ed25519 (Solana).
+- **`UrAdapter`**: Implements UR (Uniform Resources) protocol for secure airgap communication.
+
+### 4. Primary Adapters
+- **`wallet-tui`**: A terminal-based user interface for interacting with the wallet core.
+- **`wallet-ffi`**: A UniFFI-based bridge for Android/iOS mobile integration.
+
+---
+
+## 📂 Project Structure
+
+```text
+.
+├── wallet-core         # Core Logic (The "Hexagon")
+│   └── src
+│       ├── domain      # Entities & Ports
+│       ├── application # Services
+│       └── infrastructure # Adapters
+├── wallet-ffi          # UniFFI Bridge (FFI Adapter)
+└── wallet-tui          # Terminal Interface (UI Adapter)
+```
 
 ---
 

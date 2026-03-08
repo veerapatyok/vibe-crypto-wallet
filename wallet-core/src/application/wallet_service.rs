@@ -1,19 +1,22 @@
-use crate::domain::{Chain, CryptoProvider, MnemonicProvider, Wallet};
+use crate::domain::{AirgapProvider, Chain, CryptoProvider, MnemonicProvider, Wallet};
 use std::sync::Arc;
 
 pub struct WalletService {
     mnemonic_provider: Arc<dyn MnemonicProvider + Send + Sync>,
     crypto_provider: Arc<dyn CryptoProvider + Send + Sync>,
+    airgap_provider: Arc<dyn AirgapProvider + Send + Sync>,
 }
 
 impl WalletService {
     pub fn new(
         mnemonic_provider: Arc<dyn MnemonicProvider + Send + Sync>,
         crypto_provider: Arc<dyn CryptoProvider + Send + Sync>,
+        airgap_provider: Arc<dyn AirgapProvider + Send + Sync>,
     ) -> Self {
         Self {
             mnemonic_provider,
             crypto_provider,
+            airgap_provider,
         }
     }
 
@@ -45,5 +48,9 @@ impl WalletService {
     ) -> Result<Vec<u8>, String> {
         let seed = self.mnemonic_provider.get_seed(&wallet.mnemonic, pin)?;
         self.crypto_provider.sign_evm_hash(&seed, message_hash)
+    }
+
+    pub fn encode_to_ur(&self, data: &[u8]) -> Result<Vec<String>, String> {
+        self.airgap_provider.encode_to_ur(data)
     }
 }
